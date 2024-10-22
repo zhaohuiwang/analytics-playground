@@ -1,0 +1,6 @@
+analytics-playground/poetry.lock
+analytics-playground/poetry.toml
+.CHANGELOG.md/
+otebooks/
+data/
+.venv

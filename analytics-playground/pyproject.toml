@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "analytics-playground"
+version = "0.1.0"
+description = ""
+authors = ["zhaohuiwang <ezhwang@gmail.com>"]
+readme = "README.md"
+packages = [{include = "analytics_playground", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+matplotlib = "^3.9.2"
+numpy = "2.0"
+bayesian-optimization = "^2.0.0"
+hyperopt = "^0.2.7"
+pydantic = "^2.9.2"
+
+
+[tool.poetry.group.test.dependencies]
+ipykernel = "^6.29.5"
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
