@@ -2,119 +2,6 @@
 
 
 ################################################################################
-# XGBoost CPU Utilization (Number of estimators) vs. Number of Estimators and Threads
-# https://xgboosting.com/xgboost-cpu-usage-below-100-during-training/
-################################################################################
-
-import psutil
-import pandas as pd
-from sklearn.datasets import make_classification
-from xgboost import XGBClassifier
-import matplotlib.pyplot as plt
-
-# Generate a synthetic dataset for binary classification
-X, y = make_classification(n_samples=1000000, n_features=20, n_informative=10, n_redundant=5, random_state=42)
-
-# Define the range of threads and estimators to test
-threads_range = range(1, 5)
-estimators_range = [10, 50, 100, 200, 300, 400, 500]
-
-# Initialize a DataFrame to store the results
-results_df = pd.DataFrame(columns=['threads', 'estimators', 'cpu_utilization'])
-
-# Iterate over the number of threads and estimators
-for threads in threads_range:
-   for estimators in estimators_range:
-       # Initialize an XGBClassifier with the specified parameters
-       model = XGBClassifier(n_jobs=threads, n_estimators=estimators, random_state=42)
-
-       # Measure CPU utilization before training
-       _ = psutil.cpu_percent()
-
-       # Train the model
-       model.fit(X, y)
-
-       # Measure CPU utilization since last call
-       cpu_percent_during = psutil.cpu_percent()
-
-       result = pd.DataFrame([{
-                           'threads': threads,
-                           'estimators': estimators,
-                           'cpu_utilization': cpu_percent_during
-                       }])
-       # Report progress
-       print(result)
-
-       # Append the results to the DataFrame
-       results_df = pd.concat([results_df, result], ignore_index=True)
-
-# Pivot the DataFrame to create a matrix suitable for plotting
-plot_df_cpu = results_df.pivot(index='estimators', columns='threads', values='cpu_utilization')
-
-# Create a line plot
-plt.figure(figsize=(10, 6))
-for threads in threads_range:
-   plt.plot(plot_df_cpu.index, plot_df_cpu[threads], marker='o', label=f'{threads} threads')
-
-plt.xlabel('Number of Estimators')
-plt.ylabel('CPU Utilization (%)')
-plt.title('XGBoost CPU Utilization vs. Number of Estimators and Threads')
-plt.legend(title='Threads')
-plt.grid(True)
-plt.xticks(estimators_range)
-plt.show()
-
-################################################################################
-# Tune XGBoost "alpha" Parameter
-# Applying matplotlib.pyplot.semilogx to make a plot with log scaling on the x-axis
-# Applying matplotlib.pyplot.fill_between to plot confidence interval
-# https://xgboosting.com/tune-xgboost-alpha-parameter/
-################################################################################
-import xgboost as xgb
-import numpy as np
-from sklearn.datasets import make_regression
-from sklearn.model_selection import GridSearchCV, KFold
-from sklearn.metrics import r2_score
-
-# Create a synthetic regression dataset
-X, y = make_regression(n_samples=1000, n_features=20, n_informative=10, noise=0.1, random_state=42)
-
-# Configure cross-validation
-cv = KFold(n_splits=5, shuffle=True, random_state=42)
-
-# Define hyperparameter grid
-param_grid = {
-    'alpha': [0, 0.01, 0.1, 1, 10, 100]
-}
-
-# Set up XGBoost regressor
-model = xgb.XGBRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
-
-# Perform grid search
-grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=cv, scoring='r2', n_jobs=-1, verbose=1)
-grid_search.fit(X, y)
-
-# Get results
-print(f"Best alpha: {grid_search.best_params_['alpha']}")
-print(f"Best CV R^2 score: {grid_search.best_score_:.4f}")
-
-# Plot alpha vs. R^2 score
-import matplotlib.pyplot as plt
-results = grid_search.cv_results_
-
-plt.figure(figsize=(10, 6))
-plt.semilogx(param_grid['alpha'], results['mean_test_score'], marker='o', linestyle='-', color='b')
-plt.fill_between(param_grid['alpha'], results['mean_test_score'] - results['std_test_score'],
-                 results['mean_test_score'] + results['std_test_score'], alpha=0.1, color='b')
-plt.title('Alpha vs. R^2 Score')
-plt.xlabel('Alpha (log scale)')
-plt.ylabel('CV Average R^2 Score')
-plt.grid(True)
-plt.show()
-
-
-
-################################################################################
 # A simple LR demo
 ################################################################################
 # from abc import ABC # Abstract Base Classes
@@ -249,3 +136,176 @@ ax.set_ylabel('Y')
 ax.set_title('Linear Regression')
 plt.show() # plt.savefig()
 
+
+################################################################################
+# XGBoost CPU Utilization (Number of estimators) vs. Number of Estimators and Threads
+# https://xgboosting.com/xgboost-cpu-usage-below-100-during-training/
+################################################################################
+
+import psutil
+import pandas as pd
+from sklearn.datasets import make_classification
+from xgboost import XGBClassifier
+import matplotlib.pyplot as plt
+
+# Generate a synthetic dataset for binary classification
+X, y = make_classification(n_samples=1000000, n_features=20, n_informative=10, n_redundant=5, random_state=42)
+
+# Define the range of threads and estimators to test
+threads_range = range(1, 5)
+estimators_range = [10, 50, 100, 200, 300, 400, 500]
+
+# Initialize a DataFrame to store the results
+results_df = pd.DataFrame(columns=['threads', 'estimators', 'cpu_utilization'])
+
+# Iterate over the number of threads and estimators
+for threads in threads_range:
+   for estimators in estimators_range:
+       # Initialize an XGBClassifier with the specified parameters
+       model = XGBClassifier(n_jobs=threads, n_estimators=estimators, random_state=42)
+
+       # Measure CPU utilization before training
+       _ = psutil.cpu_percent()
+
+       # Train the model
+       model.fit(X, y)
+
+       # Measure CPU utilization since last call
+       cpu_percent_during = psutil.cpu_percent()
+
+       result = pd.DataFrame([{
+                           'threads': threads,
+                           'estimators': estimators,
+                           'cpu_utilization': cpu_percent_during
+                       }])
+       # Report progress
+       print(result)
+
+       # Append the results to the DataFrame
+       results_df = pd.concat([results_df, result], ignore_index=True)
+
+# Pivot the DataFrame to create a matrix suitable for plotting
+plot_df_cpu = results_df.pivot(index='estimators', columns='threads', values='cpu_utilization')
+
+# Create a line plot
+plt.figure(figsize=(10, 6))
+for threads in threads_range:
+   plt.plot(plot_df_cpu.index, plot_df_cpu[threads], marker='o', label=f'{threads} threads')
+
+plt.xlabel('Number of Estimators')
+plt.ylabel('CPU Utilization (%)')
+plt.title('XGBoost CPU Utilization vs. Number of Estimators and Threads')
+plt.legend(title='Threads')
+plt.grid(True)
+plt.xticks(estimators_range)
+plt.show()
+
+################################################################################
+# Tune XGBoost "alpha" Parameter
+# Applying matplotlib.pyplot.semilogx to make a plot with log scaling on the x-axis
+# Applying matplotlib.pyplot.fill_between to plot confidence interval
+# https://xgboosting.com/tune-xgboost-alpha-parameter/
+################################################################################
+import xgboost as xgb
+import numpy as np
+from sklearn.datasets import make_regression
+from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.metrics import r2_score
+
+# Create a synthetic regression dataset
+X, y = make_regression(n_samples=1000, n_features=20, n_informative=10, noise=0.1, random_state=42)
+
+# Configure cross-validation
+cv = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# Define hyperparameter grid
+param_grid = {
+    'alpha': [0, 0.01, 0.1, 1, 10, 100]
+}
+
+# Set up XGBoost regressor
+model = xgb.XGBRegressor(n_estimators=100, learning_rate=0.1, random_state=42)
+
+# Perform grid search
+grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=cv, scoring='r2', n_jobs=-1, verbose=1)
+grid_search.fit(X, y)
+
+# Get results
+print(f"Best alpha: {grid_search.best_params_['alpha']}")
+print(f"Best CV R^2 score: {grid_search.best_score_:.4f}")
+
+# Plot alpha vs. R^2 score
+import matplotlib.pyplot as plt
+results = grid_search.cv_results_
+
+plt.figure(figsize=(10, 6))
+plt.semilogx(param_grid['alpha'], results['mean_test_score'], marker='o', linestyle='-', color='b')
+plt.fill_between(param_grid['alpha'], results['mean_test_score'] - results['std_test_score'],
+                 results['mean_test_score'] + results['std_test_score'], alpha=0.1, color='b')
+plt.title('Alpha vs. R^2 Score')
+plt.xlabel('Alpha (log scale)')
+plt.ylabel('CV Average R^2 Score')
+plt.grid(True)
+plt.show()
+
+################################################################################
+# Animated image using a precomputed list of images
+# https://matplotlib.org/stable/gallery/animation/index.html
+################################################################################
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
+
+fig, ax = plt.subplots()
+
+def f(x, y):
+    return np.sin(x) + np.cos(y)
+
+x = np.linspace(0, 2 * np.pi, 120)
+y = np.linspace(0, 2 * np.pi, 100).reshape(-1, 1)
+
+# ims is a list of lists, each row is a list of artists to draw in the
+# current frame; here we are just animating one artist, the image, in
+# each frame
+ims = []
+for i in range(60):
+    x += np.pi / 15
+    y += np.pi / 30
+    im = ax.imshow(f(x, y), animated=True)
+    if i == 0:
+        ax.imshow(f(x, y))  # show an initial one first
+    ims.append([im])
+
+ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True,
+                                repeat_delay=1000)
+# To save the animation, use e.g.
+# ani.save("movie.mp4")
+# or
+# writer = animation.FFMpegWriter(
+#     fps=15, metadata=dict(artist='Me'), bitrate=1800)
+# ani.save("movie.mp4", writer=writer)
+plt.show()
+
+
+################################################################################
+# 
+################################################################################
+
+
+
+################################################################################
+# 
+################################################################################
+
+
+
+################################################################################
+# 
+################################################################################
+
+
+
+################################################################################
+# 
+################################################################################
